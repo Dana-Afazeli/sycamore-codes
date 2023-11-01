@@ -5,7 +5,7 @@ from .bandit_agent_base import BanditAgentBase
 
 
 class AdaptiveNormalHedge(BanditAgentBase):
-    def __init__(self, n_actions, prior = None, signal_type='reward'):
+    def __init__(self, n_actions, prior = None, signal_type='reward', random_seed=42):
         self.n_actions = n_actions
         if prior is None:
             self.prior = np.ones((self.n_actions,))
@@ -17,9 +17,12 @@ class AdaptiveNormalHedge(BanditAgentBase):
         else:
             raise Exception('invalid signal type. either "reward" or "loss"')
         
+        self.random_seed = random_seed
+        self.rng = np.random.default_rng(self.random_seed)
+
         self.last_probabilities = None
         self.last_awake_experts = None
-    
+
         self.R = np.zeros((self.n_actions,))
         self.C = np.zeros((self.n_actions,))
 
@@ -55,7 +58,7 @@ class AdaptiveNormalHedge(BanditAgentBase):
         probabilities = self._calculate_probabilities(awake_experts)
         self.last_probabilities = probabilities
         self.last_awake_experts = awake_experts
-        return np.random.choice(self.n_actions, p=probabilities)
+        return self.rng.choice(self.n_actions, p=probabilities)
     
     def _calculate_regrets(self, signals):
         signals_arr = np.array(signals)
@@ -80,6 +83,7 @@ class AdaptiveNormalHedge(BanditAgentBase):
         params = {}
         params['n_actions'] = self.n_actions
         params['prior'] = self.prior.tolist()
+        params['random_seed'] = self.random_seed
         params['signal_type'] = self.signal_type
         params['R'] = self.R.tolist()
         params['C'] = self.C.tolist()
@@ -91,6 +95,7 @@ class AdaptiveNormalHedge(BanditAgentBase):
         params = json.load(open(path, 'r'))
         self.n_actions = params['n_actions']
         self.prior = np.array(params['prior'])
+        self.random_seed = params['random_seed']
         self.signal_type = params['signal_type']
         self.R = np.array(params['R'])
         self.C = np.array(params['C'])
