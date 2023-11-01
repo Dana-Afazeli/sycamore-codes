@@ -40,24 +40,31 @@ class AdaptiveNormalHedge(BanditAgentBase):
         return weights * mask_array
 
     def _calculate_weights(self):
-        return 0.5 * (
+        weights = 0.5 * (
             AdaptiveNormalHedge._phi(self.R + 1, self.C + 1) -
             AdaptiveNormalHedge._phi(self.R - 1, self.C + 1)
         )
+
+        if np.array_equal(weights, np.zeros(weights.shape)):
+            return np.ones(weights.shape)
+        
+        return weights
 
     def _calculate_probabilities(self, awake_experts):
         weights = self._calculate_weights()
         masked_weights = AdaptiveNormalHedge._mask_weights(weights, awake_experts)
         proportions = masked_weights * self.prior
+        
         return proportions / np.sum(proportions)
 
-    def step(self, awake_experts = None):
+    def step(self, awake_experts=None):
         if awake_experts is None:
             awake_experts = np.arange(self.n_actions)
 
         probabilities = self._calculate_probabilities(awake_experts)
         self.last_probabilities = probabilities
         self.last_awake_experts = awake_experts
+
         return self.rng.choice(self.n_actions, p=probabilities)
     
     def _calculate_regrets(self, signals):
@@ -78,6 +85,7 @@ class AdaptiveNormalHedge(BanditAgentBase):
     def update(self, signals):
         regrets = self._calculate_regrets(signals)
         self._update_regrets(regrets)
+        return regrets
 
     def save(self, path):
         params = {}
