@@ -1,3 +1,4 @@
+import json
 import numpy as np
 
 from .bandit_agent_base import BanditAgentBase
@@ -71,7 +72,29 @@ class AdaptiveNormalHedge(BanditAgentBase):
         self.R += regrets
         self.C += np.abs(regrets)
 
-    def update_signals(self, signals):
+    def update(self, signals):
         regrets = self._calculate_regrets(signals)
         self._update_regrets(regrets)
+
+    def save(self, path):
+        params = {}
+        params['n_actions'] = self.n_actions
+        params['prior'] = self.prior.tolist()
+        params['signal_type'] = self.signal_type
+        params['R'] = self.R.tolist()
+        params['C'] = self.C.tolist()
+        params['last_probabilities'] = self.last_probabilities.tolist()
+        params['last_awake_experts'] = self.last_awake_experts.tolist()
+        json.dump(params, open(path, 'w'))
+
+    def load(self, path):
+        params = json.load(open(path, 'r'))
+        self.n_actions = params['n_actions']
+        self.prior = np.array(params['prior'])
+        self.signal_type = params['signal_type']
+        self.R = np.array(params['R'])
+        self.C = np.array(params['C'])
+        self.last_probabilities = np.array(params['last_probabilities'])
+        self.last_awake_experts = np.array(params['last_awake_experts'])
+
         
