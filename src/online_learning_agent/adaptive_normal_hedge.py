@@ -1,10 +1,10 @@
 import json
 import numpy as np
 
-from .bandit_agent_base import BanditAgentBase
+from .agent_base import AgentBase
 
 
-class AdaptiveNormalHedge(BanditAgentBase):
+class AdaptiveNormalHedge(AgentBase):
     def __init__(self, n_actions, prior = None, signal_type='reward', random_seed=42):
         self.n_actions = n_actions
         if prior is None:
@@ -18,14 +18,9 @@ class AdaptiveNormalHedge(BanditAgentBase):
             raise Exception('invalid signal type. either "reward" or "loss"')
         
         self.random_seed = random_seed
-        self.rng = np.random.default_rng(self.random_seed)
 
-        self.last_probabilities = None
-        self.last_awake_experts = None
-
-        self.R = np.zeros((self.n_actions,))
-        self.C = np.zeros((self.n_actions,))
-
+        self.reset()
+        
     @staticmethod
     def _phi(R, C):
         return np.exp(
@@ -110,4 +105,11 @@ class AdaptiveNormalHedge(BanditAgentBase):
         self.last_probabilities = np.array(params['last_probabilities'])
         self.last_awake_experts = np.array(params['last_awake_experts'])
 
-        
+    def reset(self):
+        self.rng = np.random.default_rng(self.random_seed)
+
+        self.last_probabilities = None
+        self.last_awake_experts = None
+
+        self.R = np.zeros((self.n_actions,))
+        self.C = np.zeros((self.n_actions,))

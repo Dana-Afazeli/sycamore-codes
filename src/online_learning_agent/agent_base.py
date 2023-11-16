@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-class BanditAgentBase(ABC):
+class AgentBase(ABC):
     
     def __init__(self, n_actions, prior = None, signal_type='reward'):
         self.n_actions = n_actions
@@ -30,4 +30,8 @@ class BanditAgentBase(ABC):
 
     @abstractmethod
     def load(self, path):
+        pass
+
+    @abstractmethod
+    def reset(self):
         pass

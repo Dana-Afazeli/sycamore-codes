@@ -1,12 +1,13 @@
 import numpy as np
 
-from .bandit_env_base import BanditEnvBase
+from .env_base import EnvBase
 
-class BanditRandomEnv(BanditEnvBase):
+class RandomEnv(EnvBase):
     def __init__(self, n_actions, random_seed=42):
         self.n_actions = n_actions
         self.random_seed = random_seed
-        self.rng = np.random.default_rng(self.random_seed)
+
+        self.reset()
 
     def step_awake_experts(self):
         size = self.rng.choice(np.arange(1,self.n_actions))
@@ -16,3 +17,6 @@ class BanditRandomEnv(BanditEnvBase):
 
     def step_signal(self):
         return self.rng.uniform(size=self.n_actions)
+
+    def reset(self):
+        self.rng = np.ranodm.default_rng(self.random_seed)
